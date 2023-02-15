@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.onebuygz.analytics.android</groupId>
+  <artifactId>OnebuyGzAnalyticsSDK-Beta</artifactId>
+  <version>6.5.1</version>
+  <packaging>aar</packaging>
+  <name>The official Android SDK for Onebuygz Analytics.</name>
+  <description>The official Android SDK for Onebuygz Analytics.</description>
+  <url>The official Android SDK for Onebuygz Analytics.</url>
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+    </license>
+  </licenses>
+  <developers>
+    <developer>
+      <id>xiongwenjie</id>
+      <name>xiongwenjie</name>
+      <email>xiong.wenjie@foundbyte.com</email>
+    </developer>
+  </developers>
+  <dependencies/>
+</project>

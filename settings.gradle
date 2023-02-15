@@ -1,0 +1,6 @@
+include ':module_core', ':demo', /*':module_advert',*/ ':OnebuyGzAnalyticsSDK'
+include ':module_visual'
+include ':module_autoTrack'
+//include ':module_push'
+//include ':module_encrypt'
+include ':plugin'

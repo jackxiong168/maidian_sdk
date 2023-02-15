@@ -1,0 +1,32 @@
+apply plugin: 'maven'
+
+version=pluginVersion
+group = "com.onebuygz.analytics.android"
+def nexusRepositoryUrl=nexusReleases
+
+if (!false.toBoolean()){
+    version = "${version}"
+    nexusRepositoryUrl=nexusSnapshots
+}
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            repository(url: uri('../plugin_repo'))
+//            repository(url: nexusRepositoryUrl) {
+//                authentication(userName: nexusUserName, password: nexusPassword)
+//            }
+
+            pom.artifactId = "plugin"
+
+            pom.project {
+                licenses {
+                    license {
+                        name 'The Apache Software License, Version 2.0'
+                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+            }
+        }
+    }
+}

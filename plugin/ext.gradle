@@ -1,0 +1,21 @@
+project.ext {
+    pluginVersion = '3.5.0'
+    Properties properties = new Properties()
+    //注意不要写成project.file
+    if (project.rootProject.file('local.properties').exists()) {
+        properties.load(project.rootProject.file('local.properties').newDataInputStream())
+    }
+
+    def nRelease = 'nexus.plugin.releases'
+    def nSnapshot = 'nexus.plugin.snapshots'
+    def nUserName = 'nexus.username'
+    def nPassword = 'nexus.password'
+    def bUser = 'bintray.user'
+    def bAPIKey = 'bintray.apikey'
+    nexusReleases = properties.getProperty(nRelease, "")
+    nexusSnapshots = properties.getProperty(nSnapshot, "")
+    nexusUserName = properties.getProperty(nUserName, "")
+    nexusPassword = properties.getProperty(nPassword, "")
+    bintrayUser = properties.getProperty(bUser, "")
+    bintrayAPIKey = properties.getProperty(bAPIKey, "")
+}

@@ -1,0 +1,185 @@
+apply plugin: 'signing'
+apply plugin: 'maven-publish'
+
+task sourceJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    classifier = 'sources'
+}
+
+task javadoc(type: Javadoc) {
+    dependsOn 'assembleRelease'
+    source = android.sourceSets.main.java.srcDirs +
+            'build/generated/not_namespaced_r_class_sources/release/generateReleaseRFile/out/com/sensorsdata/analytics/android/sdk/R.java'
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+}
+
+javadoc {
+    options {
+        encoding "UTF-8"
+        charSet 'UTF-8'
+    }
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+// 控制是否发布到测试 beta 版本
+def isBeta = true
+def betaPrefix = "Beta"
+
+version = rootProject.ext.versions.sdk_version
+def groupId_maven = 'com.onebuygz.analytics.android'
+def artifactId_maven = project.name
+
+if (project.name == "module_core") {
+    if (isBeta) {
+        artifactId_maven = "core-" + betaPrefix
+    } else {
+        artifactId_maven = "core"
+    }
+    version = rootProject.ext.versions.module_version
+} else if (project.name == "module_advert") {
+    if (isBeta) {
+        artifactId_maven = "advert-" + betaPrefix
+    } else {
+        artifactId_maven = "advert"
+    }
+    version = rootProject.ext.versions.module_version
+} else if (project.name == "OnebuyGzAnalyticsSDK") {
+    if (isBeta) {
+        artifactId_maven = "OnebuyGzAnalyticsSDK-" + betaPrefix
+    } else {
+        artifactId_maven = "OnebuyGzAnalyticsSDK"
+    }
+    version = rootProject.ext.versions.sdk_version
+} else if (project.name == "module_visual") {
+    if (isBeta) {
+        artifactId_maven = "visual-" + betaPrefix
+    } else {
+        artifactId_maven = "visual"
+    }
+    version = rootProject.ext.versions.module_version
+} else if (project.name == "module_autoTrack") {
+    if (isBeta) {
+        artifactId_maven = "autoTrack-" + betaPrefix
+    } else {
+        artifactId_maven = "autoTrack"
+    }
+    version = rootProject.ext.versions.module_version
+} else if (project.name == "module_push") {
+    if (isBeta) {
+        artifactId_maven = "push-" + betaPrefix
+    } else {
+        artifactId_maven = "push"
+    }
+    version = rootProject.ext.versions.module_version
+} else if (project.name == "module_encrypt") {
+    if (isBeta) {
+        artifactId_maven = "encrypt-" + betaPrefix
+    } else {
+        artifactId_maven = "encrypt"
+    }
+    version = rootProject.ext.versions.module_version
+}
+
+publishing {
+    publications {
+        mavenAndroid(MavenPublication) {
+            groupId = groupId_maven
+            artifactId = artifactId_maven
+            version = version
+            artifact sourceJar
+            artifact javadocJar
+            artifact('build/outputs/aar/' + project.name + '-release.aar')
+            // 配置 pop 文件格式
+            pom {
+                packaging 'aar'
+                name = 'The official Android SDK for Onebuygz Analytics.'
+                description = 'The official Android SDK for Onebuygz Analytics.'
+                url = 'The official Android SDK for Onebuygz Analytics.'
+                licenses {
+                    license {
+                        name = 'The Apache Software License, Version 2.0'
+                        url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'xiongwenjie'
+                        name = 'xiongwenjie'
+                        email = 'xiong.wenjie@foundbyte.com'
+                    }
+                }
+//                scm {
+//                    connection = 'https://github.com/sensorsdata/sa-sdk-android'
+//                    developerConnection = 'https://github.com/sensorsdata/sa-sdk-android.git'
+//                    url = 'https://github.com/sensorsdata/sa-sdk-android'
+//                }
+                pom.withXml {
+                    def dependenciesNode = asNode().appendNode('dependencies')
+                    project.configurations.all { configuration ->
+                        def name = configuration.name
+                        if (name == 'implementation' || name == 'releaseImplementation' ||
+                            name == 'api' || name == 'embed') {
+                            configuration.allDependencies.each {
+                                if (it.group != null && it.name != "unspecified" && it.version != null) {
+                                    def groupId = it.group
+                                    def artifactId = it.name
+                                    def version = it.version
+                                    println("原始dependency:" + groupId + ":" + artifactId + ":" + version)
+                                    if (groupId == "maidian_sdk" && artifactId.startsWith("module_")) {
+                                        println("替换group:${groupId}和artifactid:${artifactId}")
+                                        groupId = groupId_maven
+                                        artifactId = getModuleArtifactId(it.name)
+                                        version = rootProject.ext.versions.module_version
+                                    }
+                                    if (isBeta) {
+                                        artifactId = artifactId + "-" + betaPrefix
+                                    }
+                                    println("最终dependency:" + groupId + ":" + artifactId + ":" + version)
+                                    def dependencyNode = dependenciesNode.appendNode('dependency')
+                                    dependencyNode.appendNode('groupId', groupId)
+                                    dependencyNode.appendNode('artifactId', artifactId)
+                                    dependencyNode.appendNode('version', version)
+                                    dependencyNode.appendNode('scope', 'api')
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    // 配置远程仓库
+    repositories {
+        Properties properties = new Properties()
+        properties.load(project.rootProject.file('local.properties').newDataInputStream())
+        def mavenUser = properties.getProperty("nexus.username")
+        def mavenPassword = properties.getProperty("nexus.password")
+        def nexusRepositoryUrl = properties.getProperty("nexus.sdk.snapshots")
+        if (!isBeta) {
+            nexusRepositoryUrl = properties.getProperty("nexus.sdk.releases")
+        }
+        maven {
+            url = nexusRepositoryUrl
+            credentials {
+                username mavenUser
+                password mavenPassword
+            }
+        }
+        /*maven {
+            url = '../sdk_repo'
+        }*/
+    }
+}
+
+// 对 mavenAndroid 发布内容进行签名
+//signing {
+//    sign publishing.publications.mavenAndroid
+//}
+
+def getModuleArtifactId(String moduleName) {
+    return moduleName.replace("module_", "")
+}
