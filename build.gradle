@@ -7,8 +7,8 @@ buildscript {
         google()
         //埋点插件
         maven {
-//            url 'plugin_repo'
-            url 'http://10.10.11.151:38081/repository/visual-buried-point-plugin-snapshot'
+            url 'plugin_repo'
+//            url 'http://10.10.11.151:38081/repository/visual-buried-point-plugin-snapshot'
         }
         //埋点sdk
 //        maven {
